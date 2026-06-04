@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Copy, ExternalLink, RotateCcw, Share2, ThumbsDown, ThumbsUp } from "lucide-react";
 import { baseEventProps, trackEvent } from "@/lib/events";
-import { readMemory, rememberLaunch, resetMemory, saveSourceNote } from "@/lib/memory";
+import { readMemory, rememberLaunch, rememberSearch, resetMemory, saveSourceNote } from "@/lib/memory";
 import { filterLinksByMode, sourceName } from "@/lib/sourceAdapters";
 import type { GeneratedSourceLink, LaunchMode, LaunchSession, SearchIntent, SourceCheckInOutcome, SourceReaction, SourceResultNote } from "@/lib/types";
 
@@ -47,6 +47,21 @@ export function ResultsWorkspace({ intent, links }: ResultsWorkspaceProps) {
 	const shareUrl = typeof window === "undefined" ? "" : window.location.href;
 
 	useEffect(() => {
+		const searchKey = `dt-search-viewed:${intent.city.slug}:${intent.date}:${intent.preferredTime}:${intent.partySize}:${intent.query}`;
+		if (!sessionStorage.getItem(searchKey)) {
+			sessionStorage.setItem(searchKey, "1");
+			rememberSearch({
+				city: intent.city.name,
+				citySlug: intent.city.slug,
+				date: intent.date,
+				time: intent.preferredTime,
+				partySize: intent.partySize,
+				query: intent.query,
+				searchUrl: `${window.location.pathname}${window.location.search}`,
+				createdAt: new Date().toISOString(),
+			});
+			void trackEvent("search_submitted", baseEventProps(intent));
+		}
 		const memory = readMemory();
 		setNotes(memory.sourceResultNotes.filter((note) => note.launchSessionId === memory.activeLaunchSessions[0]?.id));
 		setSession(memory.activeLaunchSessions[0] ?? null);

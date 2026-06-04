@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export function Footer() {
 	return (
 		<footer className="mt-20 border-t hairline bg-[#fffdf8]/70">
@@ -17,11 +15,11 @@ export function Footer() {
 					</p>
 				</div>
 				<nav className="grid content-start gap-2 md:justify-end">
-					<Link href="/legal">Legal</Link>
-					<Link href="/terms">Terms</Link>
-					<Link href="/privacy">Privacy</Link>
-					<Link href="/cookies">Cookies</Link>
-					<Link href="/admin">Admin</Link>
+					<a href="/legal">Legal</a>
+					<a href="/terms">Terms</a>
+					<a href="/privacy">Privacy</a>
+					<a href="/cookies">Cookies</a>
+					<a href="/admin">Admin</a>
 				</nav>
 			</div>
 		</footer>

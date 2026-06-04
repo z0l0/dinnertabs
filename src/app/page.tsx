@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { ArrowRight, Gauge, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Gauge, MessageSquareText, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { Footer } from "@/components/Footer";
-import { SearchForm } from "@/components/SearchForm";
 import { TopNav } from "@/components/TopNav";
 
 export default function Home() {
@@ -24,7 +22,42 @@ export default function Home() {
 								signals without scraping or pretending to know availability.
 							</p>
 						</div>
-						<SearchForm />
+						<form
+							action="/search"
+							method="get"
+							className="rounded-2xl border hairline bg-[#fffdf8] p-4 shadow-sm md:p-6"
+						>
+							<label className="block text-sm font-medium text-[#4c463d]" htmlFor="raw">
+								Dinner search
+							</label>
+							<div className="mt-2 grid gap-3 md:grid-cols-[1fr_auto]">
+								<input
+									id="raw"
+									name="raw"
+									className="focus-ring h-14 w-full rounded-xl border hairline bg-white px-4 text-base text-[#161513] shadow-inner outline-none"
+									defaultValue="June 20 4 guys 6pm steakhouse Chicago"
+									placeholder="June 20 4 guys 6pm steakhouse Chicago"
+								/>
+								<input type="hidden" name="flex" value="90" />
+								<button
+									type="submit"
+									className="focus-ring inline-flex h-14 items-center justify-center gap-2 rounded-xl bg-[#0f766e] px-6 font-semibold text-white shadow-sm transition hover:bg-[#0b4f4a]"
+								>
+									<Search size={19} />
+									Build my tabs
+								</button>
+							</div>
+							<div className="mt-4 flex flex-wrap gap-2 text-sm">
+								<span className="inline-flex items-center gap-2 rounded-full border hairline bg-white px-3 py-2">
+									<span className="h-2 w-2 rounded-full bg-[#0f766e]" />
+									Chicago
+								</span>
+								<span className="rounded-full border hairline bg-white px-3 py-2">Sat, Jun 20, 2026</span>
+								<span className="rounded-full border hairline bg-white px-3 py-2">6:00 PM</span>
+								<span className="rounded-full border hairline bg-white px-3 py-2">4 people</span>
+								<span className="rounded-full border hairline bg-white px-3 py-2">steakhouse</span>
+							</div>
+						</form>
 						<div className="grid gap-3 text-sm text-[#4c463d] sm:grid-cols-3">
 							<div className="rounded-xl border hairline bg-[#fffdf8]/80 p-4">
 								<Gauge className="mb-3 text-[#0f766e]" size={22} />
@@ -57,13 +90,13 @@ export default function Home() {
 								</div>
 							))}
 						</div>
-						<Link
+						<a
 							href="/search?city=chicago&date=2026-06-20&time=18%3A00&party=4&q=steakhouse&flex=90"
 							className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 font-semibold text-[#111c1a]"
 						>
 							Open the demo search
 							<ArrowRight size={18} />
-						</Link>
+						</a>
 					</aside>
 				</section>
 			</main>

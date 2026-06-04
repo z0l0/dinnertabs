@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { InsightsLayer } from "@/components/InsightsLayer";
@@ -8,7 +9,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { TopNav } from "@/components/TopNav";
 import { displayDate, displayTime } from "@/lib/dateUtils";
 import { buildFallbackInsights } from "@/lib/insights";
-import { parseNaturalLanguage } from "@/lib/naturalLanguage";
+import { parseNaturalLanguage, searchUrl } from "@/lib/naturalLanguage";
 import { getTrendForIntent } from "@/lib/serverInsights";
 import { generateSourceLinks } from "@/lib/sourceAdapters";
 
@@ -26,6 +27,11 @@ function toUrlSearchParams(raw: Record<string, string | string[] | undefined>) {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
 	const params = toUrlSearchParams(await searchParams);
+	const rawPhrase = params.get("raw")?.trim();
+	if (rawPhrase) {
+		const rawIntent = parseNaturalLanguage(rawPhrase, params);
+		redirect(searchUrl(rawIntent));
+	}
 	const phrase = `${params.get("q") ?? "dinner"} ${params.get("city") ?? "chicago"} ${params.get("date") ?? ""} ${params.get("time") ?? ""} ${params.get("party") ?? ""} people`;
 	const intent = parseNaturalLanguage(phrase, params);
 	const links = generateSourceLinks(intent);
