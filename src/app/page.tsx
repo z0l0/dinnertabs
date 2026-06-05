@@ -14,7 +14,7 @@ export default function Home() {
 							One search. All your reservation tabs.
 						</div>
 						<div className="space-y-5">
-							<h1 className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-[#161513] md:text-7xl">
+							<h1 className="max-w-3xl text-4xl font-semibold leading-[1.04] tracking-tight text-[#161513] sm:text-5xl md:text-7xl">
 								Find the table without rebuilding the search everywhere.
 							</h1>
 							<p className="max-w-2xl text-lg leading-8 text-[#625b51]">
@@ -62,7 +62,7 @@ export default function Home() {
 							<div className="rounded-xl border hairline bg-[#fffdf8]/80 p-4">
 								<Gauge className="mb-3 text-[#0f766e]" size={22} />
 								<p className="font-semibold text-[#161513]">Fast tab sets</p>
-								<p className="mt-1">OpenTable, Google Maps, DoorDash, Resy, Tock, Michelin, direct-site finders, and more.</p>
+								<p className="mt-1">OpenTable, Google Maps, DoorDash, Resy, Tock, Michelin, Toast Local, Yelp, and more.</p>
 							</div>
 							<div className="rounded-xl border hairline bg-[#fffdf8]/80 p-4">
 								<MessageSquareText className="mb-3 text-[#0f766e]" size={22} />

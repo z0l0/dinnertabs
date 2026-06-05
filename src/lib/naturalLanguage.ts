@@ -1,4 +1,4 @@
-import { cities, findCity } from "@/data/cities";
+import { cities, defaultCity, findCity } from "@/data/cities";
 import { normalizeDate, normalizeTime } from "@/lib/dateUtils";
 import type { SearchIntent } from "@/lib/types";
 
@@ -43,7 +43,7 @@ function extractDate(input: string): string {
 
 function extractCity(input: string) {
 	const lower = input.toLowerCase();
-	return cities.find((city) => lower.includes(city.name.toLowerCase()) || lower.includes(city.slug.replace(/-/g, " "))) ?? findCity();
+	return cities.find((city) => lower.includes(city.name.toLowerCase()) || lower.includes(city.slug.replace(/-/g, " "))) ?? defaultCity();
 }
 
 function extractTags(input: string): string[] {

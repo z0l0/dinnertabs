@@ -11,6 +11,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "chicago-il",
 		tockSlug: "chicago",
+		toastCitySlug: "chicago-il",
 		michelinPath: "/us/en/illinois/chicago/restaurants",
 		doorDashReservationsSupported: true,
 		sourcePriorityOverrides: {
@@ -20,8 +21,7 @@ export const cities: City[] = [
 			resy: 88,
 			tock: 82,
 			michelin: 77,
-			"sevenrooms-finder": 74,
-			"toast-direct-finder": 70,
+			"toast-local": 73,
 			yelp: 66,
 		},
 	},
@@ -35,6 +35,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "new-york-ny",
 		tockSlug: "new-york-city",
+		toastCitySlug: "new-york-ny",
 		michelinPath: "/us/en/new-york-state/new-york/restaurants",
 		doorDashReservationsSupported: true,
 	},
@@ -48,8 +49,8 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "los-angeles-ca",
 		tockSlug: "los-angeles",
+		toastCitySlug: "los-angeles-ca",
 		michelinPath: "/us/en/california/us-los-angeles/restaurants",
-		doorDashReservationsSupported: true,
 	},
 	{
 		name: "Miami",
@@ -61,6 +62,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "miami-fl",
 		tockSlug: "miami",
+		toastCitySlug: "miami-fl",
 		michelinPath: "/us/en/florida/miami/restaurants",
 		doorDashReservationsSupported: true,
 	},
@@ -74,6 +76,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "san-francisco-ca",
 		tockSlug: "san-francisco",
+		toastCitySlug: "san-francisco-ca",
 		michelinPath: "/us/en/california/san-francisco/restaurants",
 	},
 	{
@@ -86,7 +89,9 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "las-vegas-nv",
 		tockSlug: "las-vegas",
+		toastCitySlug: "las-vegas-nv",
 		michelinPath: null,
+		doorDashReservationsSupported: true,
 	},
 	{
 		name: "Boston",
@@ -98,6 +103,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "boston-ma",
 		tockSlug: "boston",
+		toastCitySlug: "boston-ma",
 		michelinPath: null,
 	},
 	{
@@ -110,6 +116,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.com",
 		resySlug: "washington-dc",
 		tockSlug: "washington-dc",
+		toastCitySlug: "washington-dc",
 		michelinPath: "/us/en/district-of-columbia/washington-dc/restaurants",
 	},
 	{
@@ -122,6 +129,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.ca",
 		resySlug: "toronto-on",
 		tockSlug: "toronto",
+		toastCitySlug: null,
 		michelinPath: "/ca/en/ontario/toronto/restaurants",
 	},
 	{
@@ -134,6 +142,7 @@ export const cities: City[] = [
 		openTableDomain: "opentable.ca",
 		resySlug: "montreal-qc",
 		tockSlug: "montreal",
+		toastCitySlug: null,
 		michelinPath: "/ca/en/quebec/montreal/restaurants",
 	},
 	{
@@ -146,16 +155,20 @@ export const cities: City[] = [
 		openTableDomain: "opentable.ca",
 		resySlug: "vancouver-bc",
 		tockSlug: "vancouver",
+		toastCitySlug: null,
 		michelinPath: "/ca/en/british-columbia/vancouver/restaurants",
 	},
 ];
 
-export function findCity(value?: string | null): City {
-	if (!value) return cities[0];
+export function defaultCity(): City {
+	return cities[0];
+}
+
+export function findCity(value?: string | null): City | undefined {
+	if (!value) return undefined;
 	const normalized = value.toLowerCase().trim().replace(/\s+/g, "-");
 	return (
 		cities.find((city) => city.slug === normalized) ??
-		cities.find((city) => city.name.toLowerCase() === value.toLowerCase().trim()) ??
-		cities[0]
+		cities.find((city) => city.name.toLowerCase() === value.toLowerCase().trim())
 	);
 }

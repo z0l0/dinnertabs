@@ -1,5 +1,12 @@
 import type { PublicInsightSummary, SearchIntent, TrendBucket } from "@/lib/types";
 import { getPartySizeBucket, getTimeBucket } from "@/lib/dateUtils";
+import { generateSourceLinks } from "@/lib/sourceAdapters";
+
+const fallbackPlaceMentions: Record<string, string[]> = {
+	chicago: ["Bavette's", "Gibsons", "Maple & Ash"],
+	"new-york": ["Keens", "Cote", "Gallaghers"],
+	toronto: ["Jacobs & Co.", "Barberian's", "Hy's"],
+};
 
 export function fallbackTrend(intent: SearchIntent): TrendBucket {
 	const isNorthStar = intent.city.slug === "chicago" && intent.date.endsWith("-06-20") && intent.query.includes("steak");
@@ -20,6 +27,10 @@ export function fallbackTrend(intent: SearchIntent): TrendBucket {
 
 export function buildFallbackInsights(intent: SearchIntent): PublicInsightSummary[] {
 	const tag = intent.query || intent.cuisineTags[0] || "dinner";
+	const sourceItems = generateSourceLinks(intent)
+		.slice(0, 4)
+		.map((link, index) => ({ label: link.sourceName, value: index === 0 ? "Best starting point" : "Worth checking" }));
+	const placeItems = fallbackPlaceMentions[intent.city.slug] ?? [`${intent.city.name} favorite`, "Neighborhood standby", "Direct booking lead"];
 	return [
 		{
 			module: "popular_time_windows",
@@ -45,22 +56,13 @@ export function buildFallbackInsights(intent: SearchIntent): PublicInsightSummar
 		{
 			module: "source_thumbs_up",
 			title: "Sources users marked helpful for searches like this",
-			items: [
-				{ label: "OpenTable", value: "Most opened" },
-				{ label: "Google Maps", value: "Direct-site hunt" },
-				{ label: "DoorDash", value: "Rising source" },
-				{ label: "Resy", value: "Worth checking" },
-			],
+			items: sourceItems,
 			disclaimer: "Based on DinnerTabs source check-ins where available.",
 		},
 		{
 			module: "user_shared_place_mentions",
 			title: "Places DinnerTabs users chose to mention",
-			items: [
-				{ label: "Bavette's", detail: "Shared by users for Chicago steakhouse searches" },
-				{ label: "Gibsons", detail: "Shared by users for group dinner searches" },
-				{ label: "Maple & Ash", detail: "Shared by users for steakhouse searches" },
-			],
+			items: placeItems.map((label) => ({ label, detail: `Shared by users for ${intent.city.name} ${tag} searches` })),
 			disclaimer: "User-shared place mentions are not availability claims.",
 		},
 	];

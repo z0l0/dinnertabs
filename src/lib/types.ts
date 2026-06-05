@@ -10,6 +10,7 @@ export type City = {
 	openTableDomain?: "opentable.com" | "opentable.ca";
 	resySlug?: string | null;
 	tockSlug?: string | null;
+	toastCitySlug?: string | null;
 	michelinPath?: string | null;
 	doorDashReservationsSupported?: boolean;
 	sourcePriorityOverrides?: Record<string, number>;
@@ -71,6 +72,7 @@ export type GeneratedSourceLink = {
 	confidenceLabel: SourceConfidenceLabel;
 	rankScore: number;
 	launchGroup: LaunchGroup;
+	mobileAppLinkRisk?: boolean;
 	legalNote?: string;
 };
 
@@ -88,6 +90,8 @@ export type SourceAdapter = {
 	defaultRank: number;
 	launchGroup: LaunchGroup;
 	confidenceLabel: SourceConfidenceLabel;
+	mobileAppLinkRisk?: boolean;
+	isAvailable?: (intent: SearchIntent) => boolean;
 	buildUrl: (intent: SearchIntent) => string;
 };
 

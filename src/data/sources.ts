@@ -1,5 +1,5 @@
 import type { SourceAdapter } from "@/lib/types";
-import { buildGoogleMapsSearchUrl, buildGoogleSearchUrl, encodeQuery, formatDateTimeLocal, safeOutboundUrl, sourceSearchText } from "@/lib/urlUtils";
+import { buildGoogleMapsSearchUrl, encodeQuery, formatDateTimeLocal, safeOutboundUrl, sourceSearchText } from "@/lib/urlUtils";
 
 export const sources: SourceAdapter[] = [
 	{
@@ -15,12 +15,17 @@ export const sources: SourceAdapter[] = [
 		defaultRank: 100,
 		launchGroup: "best-starting-points",
 		confidenceLabel: "Strong prefill",
+		mobileAppLinkRisk: true,
 		paramSupport: { city: true, date: true, time: true, partySize: true, query: true, cuisine: true, timeWindow: false },
 		buildUrl: (intent) => {
+			const url = new URL(`https://www.${intent.city.openTableDomain ?? "opentable.com"}/s`);
 			const term = intent.query || intent.city.name;
-			return safeOutboundUrl(
-				`https://www.${intent.city.openTableDomain ?? "opentable.com"}/s?dateTime=${formatDateTimeLocal(intent.date, intent.preferredTime)}&covers=${intent.partySize}&term=${encodeQuery(term)}`,
-			);
+			url.searchParams.set("dateTime", formatDateTimeLocal(intent.date, intent.preferredTime));
+			url.searchParams.set("covers", String(intent.partySize));
+			url.searchParams.set("latitude", String(intent.city.latitude));
+			url.searchParams.set("longitude", String(intent.city.longitude));
+			url.searchParams.set("term", term);
+			return safeOutboundUrl(url.toString());
 		},
 	},
 	{
@@ -36,10 +41,13 @@ export const sources: SourceAdapter[] = [
 		defaultRank: 96,
 		launchGroup: "best-starting-points",
 		confidenceLabel: "Partial prefill",
+		mobileAppLinkRisk: true,
 		paramSupport: { city: true, date: false, time: false, partySize: false, query: true, cuisine: true, timeWindow: false },
 		buildUrl: (intent) =>
 			buildGoogleMapsSearchUrl(
 				sourceSearchText([intent.city.name, intent.query || "restaurant", "reservations", intent.partySize, "people", intent.date, intent.preferredTime]),
+				intent.city.latitude,
+				intent.city.longitude,
 			),
 	},
 	{
@@ -55,8 +63,10 @@ export const sources: SourceAdapter[] = [
 		defaultRank: 92,
 		launchGroup: "best-starting-points",
 		confidenceLabel: "Manual after opening",
+		mobileAppLinkRisk: true,
 		paramSupport: { city: true, date: false, time: false, partySize: false, query: true, cuisine: true, timeWindow: false },
-		buildUrl: (intent) => buildGoogleSearchUrl(sourceSearchText(["DoorDash Reservations", intent.city.name, intent.query, "restaurant"])),
+		isAvailable: (intent) => intent.city.doorDashReservationsSupported === true,
+		buildUrl: () => safeOutboundUrl("https://www.doordash.com/dineout?is_reservation=true"),
 	},
 	{
 		id: "resy",
@@ -71,11 +81,12 @@ export const sources: SourceAdapter[] = [
 		defaultRank: 88,
 		launchGroup: "best-starting-points",
 		confidenceLabel: "Partial prefill",
+		mobileAppLinkRisk: true,
 		paramSupport: { city: true, date: true, time: false, partySize: true, query: false, cuisine: false, timeWindow: false },
 		buildUrl: (intent) =>
 			intent.city.resySlug
 				? safeOutboundUrl(`https://resy.com/cities/${intent.city.resySlug}?date=${intent.date}&seats=${intent.partySize}`)
-				: buildGoogleSearchUrl(sourceSearchText(["Resy", intent.city.name, intent.query, "restaurant reservations"])),
+				: safeOutboundUrl("https://resy.com/cities"),
 	},
 	{
 		id: "tock",
@@ -90,11 +101,12 @@ export const sources: SourceAdapter[] = [
 		defaultRank: 82,
 		launchGroup: "premium",
 		confidenceLabel: "Manual after opening",
+		mobileAppLinkRisk: true,
 		paramSupport: { city: true, date: false, time: false, partySize: false, query: false, cuisine: false, timeWindow: false },
 		buildUrl: (intent) =>
 			intent.city.tockSlug
 				? safeOutboundUrl(`https://www.exploretock.com/city/${intent.city.tockSlug}`)
-				: buildGoogleSearchUrl(sourceSearchText(["Tock", intent.city.name, intent.query, "restaurant reservations"])),
+				: safeOutboundUrl("https://www.exploretock.com/"),
 	},
 	{
 		id: "michelin",
@@ -110,44 +122,28 @@ export const sources: SourceAdapter[] = [
 		launchGroup: "guides-reviews",
 		confidenceLabel: "Manual after opening",
 		paramSupport: { city: true, date: false, time: false, partySize: false, query: true, cuisine: true, timeWindow: false },
+		isAvailable: (intent) => Boolean(intent.city.michelinPath),
 		buildUrl: (intent) =>
-			intent.city.michelinPath
-				? safeOutboundUrl(`https://guide.michelin.com${intent.city.michelinPath}`)
-				: buildGoogleSearchUrl(sourceSearchText(["site:guide.michelin.com", intent.city.name, intent.query, "restaurant"])),
+			safeOutboundUrl(`https://guide.michelin.com${intent.city.michelinPath}`),
 	},
 	{
-		id: "sevenrooms-finder",
-		name: "SevenRooms Finder",
-		slug: "sevenrooms-finder",
-		category: "direct-widget-finder",
+		id: "toast-local",
+		name: "Toast Local",
+		slug: "toast-local",
+		category: "reservation-marketplace",
 		isEnabled: true,
-		countries: ["CA", "US", "GLOBAL"],
-		cityCoverage: "unknown",
-		description: "Finds direct SevenRooms reservation pages through a public web search.",
-		bestFor: ["Direct widgets", "hospitality groups", "high-end restaurants", "backup searches"],
-		defaultRank: 74,
+		countries: ["US"],
+		cityCoverage: "dynamic",
+		description: "Toast's consumer restaurant discovery and reservation surface where Local by Toast is supported.",
+		bestFor: ["Toast restaurants", "local discovery", "reservation and waitlist pages"],
+		defaultRank: 73,
 		launchGroup: "direct-hunt",
 		confidenceLabel: "Manual after opening",
-		paramSupport: { city: true, date: false, time: false, partySize: false, query: true, cuisine: true, timeWindow: false },
+		mobileAppLinkRisk: true,
+		paramSupport: { city: true, date: false, time: false, partySize: false, query: false, cuisine: false, timeWindow: false },
+		isAvailable: (intent) => Boolean(intent.city.toastCitySlug),
 		buildUrl: (intent) =>
-			buildGoogleSearchUrl(sourceSearchText(["site:sevenrooms.com/reservations", intent.city.name, intent.query, "restaurant reservation"])),
-	},
-	{
-		id: "toast-direct-finder",
-		name: "Toast / Direct Finder",
-		slug: "toast-direct-finder",
-		category: "direct-widget-finder",
-		isEnabled: true,
-		countries: ["CA", "US"],
-		cityCoverage: "unknown",
-		description: "Finds direct restaurant booking pages, including Toast-connected pages and official sites.",
-		bestFor: ["Official restaurant sites", "Toast pages", "direct booking hunt", "manual backups"],
-		defaultRank: 70,
-		launchGroup: "direct-hunt",
-		confidenceLabel: "Manual after opening",
-		paramSupport: { city: true, date: false, time: false, partySize: false, query: true, cuisine: true, timeWindow: false },
-		buildUrl: (intent) =>
-			buildGoogleSearchUrl(sourceSearchText([intent.city.name, intent.query, "official restaurant reservations", "Toast"])),
+			safeOutboundUrl(`https://toast.app/cities/${intent.city.toastCitySlug}/content/popular`),
 	},
 	{
 		id: "yelp",
@@ -162,6 +158,7 @@ export const sources: SourceAdapter[] = [
 		defaultRank: 66,
 		launchGroup: "guides-reviews",
 		confidenceLabel: "Partial prefill",
+		mobileAppLinkRisk: true,
 		paramSupport: { city: true, date: false, time: false, partySize: false, query: true, cuisine: true, timeWindow: false },
 		buildUrl: (intent) =>
 			safeOutboundUrl(

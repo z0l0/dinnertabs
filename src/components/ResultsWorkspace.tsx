@@ -113,6 +113,13 @@ export function ResultsWorkspace({ intent, links }: ResultsWorkspaceProps) {
 		void trackEvent("copy_all_links_clicked", { ...baseEventProps(intent), sourceIds: links.map((link) => link.sourceId) });
 	}
 
+	async function copySourceLink(link: GeneratedSourceLink) {
+		await navigator.clipboard.writeText(link.href);
+		setCopied(true);
+		window.setTimeout(() => setCopied(false), 1600);
+		void trackEvent("copy_source_link_clicked", { ...baseEventProps(intent), sourceId: link.sourceId });
+	}
+
 	async function shareSearch() {
 		await navigator.clipboard.writeText(shareUrl);
 		setCopied(true);
@@ -148,29 +155,29 @@ export function ResultsWorkspace({ intent, links }: ResultsWorkspaceProps) {
 	return (
 		<section className="space-y-5">
 			<div className="rounded-2xl border hairline bg-[#fffdf8] p-4 shadow-sm md:p-5">
-				<div className="flex flex-wrap gap-2">
-					<button className="focus-ring rounded-xl bg-[#0f766e] px-4 py-3 font-semibold text-white" onClick={() => launch("best")}>
+				<div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+					<button className="focus-ring rounded-xl bg-[#0f766e] px-3 py-3 font-semibold text-white sm:px-4" onClick={() => launch("best")}>
 						Open best tabs
 					</button>
-					<button className="focus-ring rounded-xl border hairline bg-white px-4 py-3 font-semibold" onClick={() => launch("all")}>
+					<button className="focus-ring rounded-xl border hairline bg-white px-3 py-3 font-semibold sm:px-4" onClick={() => launch("all")}>
 						Open all
 					</button>
-					<button className="focus-ring rounded-xl border hairline bg-white px-4 py-3 font-semibold" onClick={() => launch("direct-hunt")}>
+					<button className="focus-ring rounded-xl border hairline bg-white px-3 py-3 font-semibold sm:px-4" onClick={() => launch("direct-hunt")}>
 						Direct hunt
 					</button>
-					<button className="focus-ring inline-flex items-center gap-2 rounded-xl border hairline bg-white px-4 py-3 font-semibold" onClick={copyLinks}>
+					<button className="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border hairline bg-white px-3 py-3 font-semibold sm:px-4" onClick={copyLinks}>
 						<Copy size={17} />
 						Copy links
 					</button>
-					<button className="focus-ring inline-flex items-center gap-2 rounded-xl border hairline bg-white px-4 py-3 font-semibold" onClick={shareSearch}>
+					<button className="focus-ring col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border hairline bg-white px-3 py-3 font-semibold sm:col-span-1 sm:px-4" onClick={shareSearch}>
 						<Share2 size={17} />
 						Share search
 					</button>
 				</div>
-				<p className="mt-3 text-sm text-[#625b51]">
+				<p className="mt-3 hidden text-sm text-[#625b51] sm:block">
 					DinnerTabs opens public source links in new tabs. You complete any reservation directly at the source. DinnerTabs does not read or control those tabs.
 				</p>
-				{copied ? <p className="mt-2 text-sm font-medium text-[#0f766e]">Copied. No cookie or private notes are included in the share URL.</p> : null}
+				{copied ? <p className="mt-2 text-sm font-medium text-[#0f766e]">Copied.</p> : null}
 			</div>
 
 			<div className="grid gap-5 xl:grid-cols-[1fr_310px]">
@@ -184,31 +191,42 @@ export function ResultsWorkspace({ intent, links }: ResultsWorkspaceProps) {
 									const wasOpened = session?.clickedSourceIds.includes(link.sourceId);
 									const isPrompting = activePrompt === link.sourceId || (wasOpened && !note);
 									return (
-										<article key={link.sourceId} className="rounded-2xl border hairline bg-[#fffdf8] p-4 shadow-sm">
+										<article key={link.sourceId} className="rounded-xl border hairline bg-[#fffdf8] p-3 shadow-sm sm:rounded-2xl sm:p-4">
 											<div className="flex items-start justify-between gap-3">
 												<div>
-													<p className="text-lg font-semibold">{link.sourceName}</p>
-													<p className="mt-1 text-sm leading-6 text-[#625b51]">{link.description}</p>
+													<p className="text-base font-semibold sm:text-lg">{link.sourceName}</p>
+													<p className="mt-1 hidden text-sm leading-6 text-[#625b51] sm:block">{link.description}</p>
 												</div>
-												<span className="whitespace-nowrap rounded-full bg-[#eef7f4] px-2 py-1 text-xs font-medium text-[#0f766e]">{link.confidenceLabel}</span>
+												<div className="flex shrink-0 flex-col items-end gap-1">
+													<span className="hidden whitespace-nowrap rounded-full bg-[#eef7f4] px-2 py-1 text-xs font-medium text-[#0f766e] sm:inline-flex">{link.confidenceLabel}</span>
+													{link.mobileAppLinkRisk ? <span className="whitespace-nowrap rounded-full bg-[#f7f4ee] px-2 py-1 text-xs font-medium text-[#625b51] sm:hidden">App link</span> : null}
+												</div>
 											</div>
-											<div className="mt-3 flex flex-wrap gap-2">
+											<div className="mt-3 hidden flex-wrap gap-2 sm:flex">
 												{link.bestFor.slice(0, 3).map((item) => (
 													<span key={item} className="rounded-full border hairline bg-white px-2 py-1 text-xs text-[#625b51]">
 														{item}
 													</span>
 												))}
 											</div>
-											<div className="mt-4 flex flex-wrap gap-2">
+											<div className="mt-3 grid grid-cols-[1fr_auto] gap-2 sm:mt-4 sm:flex sm:flex-wrap">
 												<button
-													className="focus-ring inline-flex items-center gap-2 rounded-xl bg-[#161513] px-4 py-2.5 font-semibold text-white"
+													className="focus-ring inline-flex items-center justify-center gap-2 rounded-xl bg-[#161513] px-4 py-3 font-semibold text-white sm:py-2.5"
 													onClick={() => launch("single-source", link)}
 												>
 													<ExternalLink size={16} />
 													Open
 												</button>
+												<button
+													className="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border hairline bg-white px-3 py-3 font-semibold sm:px-4 sm:py-2.5"
+													onClick={() => copySourceLink(link)}
+													aria-label={`Copy ${link.sourceName} URL`}
+												>
+													<Copy size={16} />
+													<span className="hidden sm:inline">Copy URL</span>
+												</button>
 												<a
-													className="focus-ring inline-flex items-center gap-2 rounded-xl border hairline bg-white px-4 py-2.5 font-semibold"
+													className="focus-ring hidden items-center gap-2 rounded-xl border hairline bg-white px-4 py-2.5 font-semibold sm:inline-flex"
 													href={link.href}
 													target="_blank"
 													rel="noopener noreferrer"

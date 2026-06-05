@@ -60,10 +60,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 						<SearchForm initialQuery={`${intent.date} ${intent.partySize} people ${intent.preferredTime} ${intent.query} ${intent.city.name}`} compact />
 					</Suspense>
 				</section>
-				<div className="mb-6">
+				<div className="mb-6 hidden md:block">
 					<InsightsLayer intent={intent} trend={trend} insights={insights} />
 				</div>
 				<ResultsWorkspace intent={intent} links={links} />
+				<div className="mt-6 md:hidden">
+					<InsightsLayer intent={intent} trend={trend} insights={insights} />
+				</div>
 			</main>
 			<Footer />
 		</>

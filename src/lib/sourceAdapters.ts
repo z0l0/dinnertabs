@@ -7,7 +7,7 @@ function supportsCountry(adapter: SourceAdapter, intent: SearchIntent): boolean 
 
 export function generateSourceLinks(intent: SearchIntent): GeneratedSourceLink[] {
 	return sources
-		.filter((source) => source.isEnabled && supportsCountry(source, intent))
+		.filter((source) => source.isEnabled && supportsCountry(source, intent) && (source.isAvailable ? source.isAvailable(intent) : true))
 		.map((source) => {
 			const rankScore = intent.city.sourcePriorityOverrides?.[source.id] ?? source.defaultRank;
 			return {
@@ -22,6 +22,7 @@ export function generateSourceLinks(intent: SearchIntent): GeneratedSourceLink[]
 				confidenceLabel: source.confidenceLabel,
 				rankScore,
 				launchGroup: source.launchGroup,
+				mobileAppLinkRisk: source.mobileAppLinkRisk,
 				legalNote: `Opens ${source.name} in a new tab. Complete any reservation at the source.`,
 			};
 		})

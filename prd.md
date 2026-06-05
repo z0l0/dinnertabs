@@ -44,9 +44,8 @@ The results should not be a generic wall of links. They should be a ranked launc
 4. Resy - useful for high-demand and trendier restaurants.
 5. Tock - useful for premium dining, tasting menus, and experiences.
 6. Michelin Guide - useful quality filter, then book at source.
-7. SevenRooms finder - Google search for direct SevenRooms booking pages.
-8. Toast/direct-site finder - Google search for direct restaurant booking pages.
-9. Yelp - reviews plus booking links/waitlist where available.
+7. Toast Local - direct Toast city pages where the city resolves correctly.
+8. Yelp - reviews plus booking links/waitlist where available.
 
 The user clicks:
 
@@ -1161,7 +1160,6 @@ function encodeQuery(value: string): string
 function formatDateYYYYMMDD(date: string): string
 function formatDateTimeLocal(date: string, time: string): string
 function formatTimeHHMM(time: string): string
-function buildGoogleSearchUrl(query: string): string
 function buildGoogleMapsSearchUrl(query: string): string
 function safeOutboundUrl(url: string): string
 ```
@@ -1170,7 +1168,7 @@ Rules:
 
 - All outbound links must be absolute HTTPS URLs.
 - All outbound links must use `target="_blank"` and `rel="noopener noreferrer"`.
-- If a URL pattern is uncertain, use a safe Google search fallback and mark as manual.
+- If a source does not expose a reliable public city/search URL, do not pretend it does. Omit it from automated launch sets or route through a clearly named source that actually owns the public URL.
 - URL templates must be easy to update in config.
 - Add unit tests for every source adapter.
 
@@ -1202,7 +1200,7 @@ Best for:
 Initial URL strategy:
 
 ```text
-https://www.opentable.com/s?dateTime={YYYY-MM-DDTHH:mm:00}&covers={partySize}&term={queryOrCity}
+https://www.opentable.com/s?dateTime={YYYY-MM-DDTHH:mm:00}&covers={partySize}&latitude={lat}&longitude={lon}&term={queryOrCity}
 ```
 
 Use `opentable.ca` for Canadian cities.
@@ -1237,7 +1235,7 @@ Best for:
 URL:
 
 ```text
-https://www.google.com/maps/search/{encodedQuery}
+https://www.google.com/maps/search/{encodedQuery}/@{lat},{lon},13z
 ```
 
 Example query:
@@ -1274,12 +1272,11 @@ Best for:
 
 Initial strategy:
 
-- Use configured public DoorDash Reservations URL if a stable city URL exists.
-- Otherwise use Google search fallback:
-
 ```text
-https://www.google.com/search?q=DoorDash+Reservations+{city}+{query}+restaurant
+https://www.doordash.com/dineout?is_reservation=true
 ```
+
+Only show DoorDash Reservations for cities where DinnerTabs has explicitly enabled DoorDash/Going Out support.
 
 Confidence:
 
@@ -1381,12 +1378,10 @@ Best for:
 - Bib Gourmand
 - recommended restaurants
 
-Use known city URLs where configured.
-
-Fallback:
+Use known city URLs where configured. If no known Michelin city URL exists, omit Michelin from that city until a direct Michelin URL is verified.
 
 ```text
-https://www.google.com/search?q=site%3Aguide.michelin.com+{city}+{query}+restaurant
+https://guide.michelin.com/{country}/{language}/{region}/{city}/restaurants
 ```
 
 Confidence:
@@ -1395,64 +1390,33 @@ Confidence:
 Manual after opening
 ```
 
-### 8.7 SevenRooms Finder
+### 8.7 Toast Local
 
 ID:
 
 ```text
-sevenrooms-finder
+toast-local
 ```
 
 Category:
 
 ```text
-direct-widget-finder
+reservation-marketplace
 ```
 
 Best for:
 
-- direct restaurant booking pages
-- restaurant groups
-- high-end hospitality groups
-
-URL:
-
-```text
-https://www.google.com/search?q=site%3Asevenrooms.com%2Freservations+{city}+{query}+restaurant+reservation
-```
-
-Confidence:
-
-```text
-Manual after opening
-```
-
-### 8.8 Toast / Direct-Site Finder
-
-ID:
-
-```text
-toast-direct-finder
-```
-
-Category:
-
-```text
-direct-widget-finder
-```
-
-Best for:
-
-- restaurants with direct booking links
-- Google Reserve / Toast-connected restaurants
-- official restaurant websites
+- Toast Local city pages
+- Toast reservations and waitlist links
+- Local by Toast-supported restaurants
 
 URLs:
 
 ```text
-https://www.google.com/search?q=site%3Atoasttab.com+{city}+{query}+restaurant+reservation
-https://www.google.com/search?q={city}+{query}+official+restaurant+reservations
+https://toast.app/cities/{toastCitySlug}/content/popular
 ```
+
+Only show Toast Local where the slug resolves to the intended city. For example, do not use `toronto-on` because Toast currently resolves that slug to Toronto, Ohio rather than Toronto, Ontario.
 
 Confidence:
 
@@ -1460,7 +1424,7 @@ Confidence:
 Manual after opening
 ```
 
-### 8.9 Yelp
+### 8.8 Yelp
 
 ID:
 
@@ -1492,7 +1456,7 @@ Confidence:
 Partial prefill
 ```
 
-### 8.10 Libro
+### 8.9 Libro
 
 ID:
 
@@ -1506,11 +1470,7 @@ Countries:
 CA
 ```
 
-URL:
-
-```text
-https://www.google.com/search?q=site%3Alibroreserve.com+{city}+restaurant+reservation+{query}
-```
+Future source only. Add Libro only when DinnerTabs has a verified public Libro city/search URL or direct partner URLs for specific restaurants.
 
 Confidence:
 
@@ -1518,7 +1478,7 @@ Confidence:
 Manual after opening
 ```
 
-### 8.11 TouchBistro Dine
+### 8.10 TouchBistro Dine
 
 ID:
 
@@ -1532,11 +1492,7 @@ Countries:
 CA, US
 ```
 
-URL:
-
-```text
-https://www.google.com/search?q=site%3Atbdine.com+{city}+{query}+reservation
-```
+Future source only. Add TouchBistro Dine only when DinnerTabs has a verified public city/search URL or direct partner URLs for specific restaurants.
 
 Confidence:
 
@@ -1587,9 +1543,8 @@ Example Chicago steakhouse default order:
 4. Resy
 5. Tock
 6. Michelin Guide
-7. SevenRooms Finder
-8. Toast / Direct-Site Finder
-9. Yelp
+7. Toast Local
+8. Yelp
 ```
 
 When enough feedback exists, adjust ranking with user-reported usefulness. Never rank by scraped availability.

@@ -8,12 +8,9 @@ export function safeOutboundUrl(url: string): string {
 	return parsed.toString();
 }
 
-export function buildGoogleSearchUrl(query: string): string {
-	return safeOutboundUrl(`https://www.google.com/search?q=${encodeQuery(query)}`);
-}
-
-export function buildGoogleMapsSearchUrl(query: string): string {
-	return safeOutboundUrl(`https://www.google.com/maps/search/${encodeQuery(query)}`);
+export function buildGoogleMapsSearchUrl(query: string, latitude?: number, longitude?: number): string {
+	const coordinateSuffix = typeof latitude === "number" && typeof longitude === "number" ? `/@${latitude.toFixed(4)},${longitude.toFixed(4)},13z` : "";
+	return safeOutboundUrl(`https://www.google.com/maps/search/${encodeQuery(query)}${coordinateSuffix}`);
 }
 
 export function formatDateTimeLocal(date: string, time: string): string {
